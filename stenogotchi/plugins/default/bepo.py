@@ -226,7 +226,7 @@ def translate_bepo(key, mod_key):
             return (new_key, new_mod_key)
         if mod_key in [ 128, 16, 8, 1 ]: #in case of meta or ctrl key pressed, we try to convert sc (modkeys = 0) even if not in translation table
             return (bepotable[key][0][0], new_mod_key)
-    return key, mod_key
+    return (key, mod_key)
 
 class EvdevKbrd:
     """
@@ -362,6 +362,7 @@ class EvdevKbrd:
                     if event.type == evdev.ecodes.EV_KEY and event.value < 2:
                         key_str = evdev.ecodes.KEY[event.code]
                         mod_key = self.modkey(key_str)
+                        logging.info(f"[bepo] {key_str}/{mod_key}")
                         if mod_key > -1:
                             self.update_mod_keys(mod_key, event.value)
                         else:
