@@ -391,6 +391,7 @@ class EvdevKeyboard(ObjectClass):
      
     def on_ready(self, agent):
         self._agent = agent
+        self.start_capture()
 
     def on_config_changed(self, config):
         self.config = config

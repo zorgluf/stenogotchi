@@ -7,7 +7,7 @@ from functools import wraps
 
 # https://stackoverflow.com/questions/14888799/disable-console-messages-in-flask-server
 logging.getLogger('werkzeug').setLevel(logging.ERROR)
-os.environ['WERKZEUG_RUN_MAIN'] = 'true'
+#os.environ['WERKZEUG_RUN_MAIN'] = 'true'
 
 import stenogotchi
 import stenogotchi.ui.web as web
