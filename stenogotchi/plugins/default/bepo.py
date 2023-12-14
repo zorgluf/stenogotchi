@@ -201,7 +201,7 @@ MODKEYS = {
     "KEY_LEFTCTRL": 7
 }
 
-from bepo_utils.keymapconv import loadkeymap, build_table
+from .bepo_utils.keymapconv import loadkeymap, build_table
 import os
 bepo_map = loadkeymap(os.path.dirname(__file__) + "/windows_bepo.klc")
 fr_map = loadkeymap(os.path.dirname(__file__) + "/KBDFR.klc")
