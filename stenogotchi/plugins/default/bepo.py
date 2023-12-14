@@ -300,7 +300,7 @@ class EvdevKbrd:
                 self.devs = keyboards
                 self.have_kb = True
             else:
-                logging.debug('[evdevkb] Keyboard not found, waiting 3 seconds and retrying')
+                logging.debug('[bepo] Keyboard not found, waiting 3 seconds and retrying')
                 sleep(3)
 
     def update_mod_keys(self, mod_key, value):
