@@ -367,6 +367,7 @@ class EvdevKbrd:
                         else:
                             #translate to bepo
                             new_key, new_mod_key = translate_bepo(event.code, self.mod_keys)
+                            logging.debug(f"[bepo] {event.code}/{self.mod_keys} -> {new_key}/{new_mod_key}")
                             if new_mod_key != self.mod_keys:
                                 self.update_mod_keys(new_mod_key, event.value)
                             self.update_keys(self.convert(evdev.ecodes.KEY[new_key]), event.value)
