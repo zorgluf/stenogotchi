@@ -401,8 +401,8 @@ class EvdevKeyboard(ObjectClass):
         self._agent.view().update()
 
     def start_capture(self):
-        logging.info('[evdevkb] Capturing evdev keypress events...')
-        self.trigger_ui_update('QWERTY')
+        logging.info('[bepo] Capturing evdev keypress events...')
+        self.trigger_ui_update('BEPO')
         self.evdevkb = EvdevKbrd(skip_dbus=True)
         self.evdevkb.set_do_capture(True)
         self.do_capture = True
@@ -410,7 +410,7 @@ class EvdevKeyboard(ObjectClass):
         self.evdevkb.event_loop()
 
     def stop_capture(self):
-        logging.info('[evdevkb] Ignoring evdev keypress events...')
+        logging.info('[bepo] Ignoring evdev keypress events...')
         self.evdevkb.set_do_capture(False)
         self.do_capture = False
         self.evdevkb = None

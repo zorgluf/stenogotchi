@@ -449,15 +449,15 @@ class Buttonshim(plugins.Plugin):
 
     def toggle_qwerty_steno(self):
         try:
-            cap_state = plugins.loaded['evdevkb'].get_capture_state()
+            cap_state = plugins.loaded['bepo'].get_capture_state()
             if not cap_state:
-                plugins.loaded['evdevkb'].start_capture()
-                logging.info(f"[buttonshim] Switched to QWERTY mode")
+                plugins.loaded['bepo'].start_capture()
+                logging.info(f"[buttonshim] Switched to BEPO mode")
             else:
-                plugins.loaded['evdevkb'].stop_capture()
+                plugins.loaded['bepo'].stop_capture()
                 logging.info(f"[buttonshim] Switched to STENO mode")
         except Exception as ex:
-            logging.exception(f"[buttonshim] Check if evdevkb is loaded, exception: {str(ex)}")
+            logging.exception(f"[buttonshim] Check if bepo is loaded, exception: {str(ex)}")
     
     def toggle_wpm_meters(self):
         command = {}
