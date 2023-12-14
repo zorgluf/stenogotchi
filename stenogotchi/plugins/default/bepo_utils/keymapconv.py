@@ -56,7 +56,7 @@ def loadkeymap(keymapfile):
                 if line != "\r\n" and line[0] != "/":
                     #split columns
                     row = line[:-2].replace('\t'," ").split("//")[0].split(" ")
-                    row = filter(lambda item: item != "",row)
+                    row = list(filter(lambda item: item != "",row))
                     #convert all char to code
                     for i in range(3,8):
                         if len(row) > i and len(row[i]) == 1:
