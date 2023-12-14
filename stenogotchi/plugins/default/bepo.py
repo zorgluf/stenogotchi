@@ -203,11 +203,11 @@ MODKEYS = {
 
 from stenogotchi.plugins.default.bepo_utils.keymapconv import loadkeymap, build_table
 import os
-bepo_map = loadkeymap(os.path.dirname(__file__) + "/windows_bepo.klc")
-fr_map = loadkeymap(os.path.dirname(__file__) + "/KBDFR.klc")
+bepo_map = loadkeymap(os.path.dirname(__file__) + "/bepo_utils/windows_bepo.klc")
+fr_map = loadkeymap(os.path.dirname(__file__) + "/bepo_utils/KBDFR.klc")
 bepotable, missings = build_table(bepo_map,fr_map)
 CP1252_map = dict()
-with open(os.path.dirname(__file__) + "/CP1252.TXT","r") as f:
+with open(os.path.dirname(__file__) + "/bepo_utils/CP1252.TXT","r") as f:
     for line in f.readlines():
         if len(line) > 5 and line[0] not in ("#", "\n"):
             (cp1252,uni) = line.split("\t")[:2]
