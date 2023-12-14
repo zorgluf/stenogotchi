@@ -119,14 +119,14 @@ def build_table(keymap1, keymap2):
 
 if __name__=="__main__":
     bepo_map = loadkeymap(os.path.dirname(__file__) + "/windows_bepo.klc")
-    print "Bepo map sample :"
-    print bepo_map
+    print("Bepo map sample :")
+    print(bepo_map)
     fr_map = loadkeymap(os.path.dirname(__file__) + "/KBDFR.klc")
-    print "Azerty map sample :"
-    print fr_map
+    print("Azerty map sample :")
+    print(fr_map)
     (table, missings) = build_table(bepo_map,fr_map)
-    print "table sample:"
-    print table
-    print "missings"
-    print missings
+    print("table sample:")
+    print(table)
+    print("missings")
+    print(missings)
 
