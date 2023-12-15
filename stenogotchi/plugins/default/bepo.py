@@ -374,7 +374,7 @@ class EvdevKbrd:
                                 self.update_mod_keys(self.mod_keys, 0)
                                 self.send_keys()
                                 sleep(0.1)
-                                self.update_mod_keys(new_mod_key, event.value)
+                                self.mod_keys = new_mod_key
                             self.update_keys(self.convert(evdev.ecodes.KEY[new_key]), event.value)
                         self.send_keys()
         self.ungrab()
