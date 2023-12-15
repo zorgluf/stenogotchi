@@ -362,14 +362,14 @@ class EvdevKbrd:
                     if event.type == evdev.ecodes.EV_KEY and event.value < 2:
                         key_str = evdev.ecodes.KEY[event.code]
                         mod_key = self.modkey(key_str)
-                        logging.info(f"[bepo] {key_str}/{mod_key}")
+                        #logging.info(f"[bepo] {key_str}/{mod_key}")
                         if mod_key > -1:
                             self.update_mod_keys(mod_key, event.value)
                             self.send_keys()
                         else:
                             #translate to bepo
                             new_key, new_mod_key = translate_bepo(event.code, self.mod_keys)
-                            logging.info(f"[bepo] {event.code}/{self.mod_keys} -> {new_key}/{new_mod_key}")
+                            #logging.info(f"[bepo] {event.code}/{self.mod_keys} -> {new_key}/{new_mod_key}")
                             if new_mod_key != self.mod_keys:
                                 old_mod_keys = self.mod_keys
                                 if self.mod_keys != 0:
