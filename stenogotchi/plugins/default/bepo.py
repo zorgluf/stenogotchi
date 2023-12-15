@@ -221,8 +221,8 @@ def translate_bepo(key, mod_key):
     new_mod_key = mod_key
     if key in bepotable:
         if mod_key in bepotable[key]:
-            new_key = bepotable[key][mod_key][1]
-            new_mod_key = bepotable[key][mod_key][2]
+            new_key = bepotable[key][mod_key][0]
+            new_mod_key = bepotable[key][mod_key][1]
             return (new_key, new_mod_key)
         if mod_key in [ 128, 16, 8, 1 ]: #in case of meta or ctrl key pressed, we try to convert sc (modkeys = 0) even if not in translation table
             return (bepotable[key][0][0], new_mod_key)
