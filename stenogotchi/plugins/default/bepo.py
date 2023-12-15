@@ -365,19 +365,25 @@ class EvdevKbrd:
                         logging.info(f"[bepo] {key_str}/{mod_key}")
                         if mod_key > -1:
                             self.update_mod_keys(mod_key, event.value)
+                            self.send_keys()
                         else:
                             #translate to bepo
                             new_key, new_mod_key = translate_bepo(event.code, self.mod_keys)
                             logging.info(f"[bepo] {event.code}/{self.mod_keys} -> {new_key}/{new_mod_key}")
                             if new_mod_key != self.mod_keys:
+                                old_mod_keys = self.mod_keys
                                 if self.mod_keys != 0:
                                     #remove old mod_key
                                     self.mod_keys = 0
                                     self.send_keys()
                                     sleep(0.1)
                                 self.mod_keys = new_mod_key
-                            self.update_keys(self.convert(evdev.ecodes.KEY[new_key]), event.value)
-                        self.send_keys()
+                                self.update_keys(self.convert(evdev.ecodes.KEY[new_key]), event.value)
+                                self.send_keys()
+                                self.mod_keys = old_mod_keys
+                            else:
+                                self.update_keys(self.convert(evdev.ecodes.KEY[new_key]), event.value)
+                                self.send_keys()
         self.ungrab()
         for dev in self.devs:
             dev.close()
