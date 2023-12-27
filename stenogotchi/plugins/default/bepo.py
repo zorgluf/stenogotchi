@@ -362,22 +362,21 @@ class EvdevKbrd:
                     if event.type == evdev.ecodes.EV_KEY and event.value < 2:
                         key_str = evdev.ecodes.KEY[event.code]
                         mod_key = self.modkey(key_str)
-<<<<<<< HEAD
-                        #logging.info(f"[bepo] {key_str}/{mod_key}")
-=======
-                        logging.debug(f"[bepo] {key_str}/{mod_key}")
->>>>>>> 09eaee3 (first working version)
+                        #logging.debug(f"[bepo] {key_str}/{mod_key}")
                         if mod_key > -1:
                             self.update_mod_keys(mod_key, event.value)
                             self.send_keys()
                         else:
+                            if event.code in missings and self.mod_keys in missings[event.code]:
+                                 #check if char exists in CP1252
+                                 unikey = int(missings[event.code][self.mod_keys][0],16)
+                                 if unikey in CP1252_map:
+                                     if event.value == 1:
+                                         self.send_using_alt_combo(unikey)
+                                     continue
                             #translate to bepo
                             new_key, new_mod_key = translate_bepo(event.code, self.mod_keys)
-<<<<<<< HEAD
-                            #logging.info(f"[bepo] {event.code}/{self.mod_keys} -> {new_key}/{new_mod_key}")
-=======
-                            logging.debug(f"[bepo] {event.code}/{self.mod_keys} -> {new_key}/{new_mod_key}")
->>>>>>> 09eaee3 (first working version)
+                            #logging.debug(f"[bepo] {event.code}/{self.mod_keys} -> {new_key}/{new_mod_key}")
                             if new_mod_key != self.mod_keys:
                                 old_mod_keys = self.mod_keys
                                 if self.mod_keys != 0:
@@ -396,6 +395,23 @@ class EvdevKbrd:
         for dev in self.devs:
             dev.close()
 
+    def send_using_alt_combo(self,code):
+        old_mod_keys = self.mod_keys
+        self.mod_keys = 4
+        #send 0
+        self.update_keys(self.convert("KEY_KP0"),1)
+        self.send_keys()
+        self.update_keys(self.convert("KEY_KP0"),0)
+        self.send_keys()
+        #convert unicode to CP1252
+        cp1252 = str(CP1252_map[code])
+        #send combo (using keypad)
+        for c in cp1252:
+            self.update_keys(self.convert("KEY_KP"+c),1)
+            self.send_keys()
+            self.update_keys(self.convert("KEY_KP"+c),0)
+            self.send_keys()
+        self.mod_keys = old_mod_keys
 
 class EvdevKeyboard(ObjectClass):
     __autohor__ = 'Anodynous'
