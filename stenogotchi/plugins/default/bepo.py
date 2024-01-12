@@ -216,17 +216,30 @@ with open(os.path.dirname(__file__) + "/bepo_utils/CP1252.TXT","r") as f:
             except:
                 pass
 
-def translate_bepo(key, mod_key):
-    new_key = key
-    new_mod_key = mod_key
-    if key in bepotable:
-        if mod_key in bepotable[key]:
-            new_key = bepotable[key][mod_key][0]
-            new_mod_key = bepotable[key][mod_key][1]
-            return (new_key, new_mod_key)
-        if mod_key in [ 128, 16, 8, 1 ]: #in case of meta or ctrl key pressed, we try to convert sc (modkeys = 0) even if not in translation table
-            return (bepotable[key][0][0], new_mod_key)
-    return (key, mod_key)
+def translate_bepo(pressed_keys, mod_key):
+    new_pressed_keys = [ 0 ] * len(pressed_keys)
+    new_mod_key = self.mod_key
+    for i in range(len(pressed_keys)-1,-1,-1):
+        key = pressed_keys[i]
+        #check if a mapping is needed
+        if key in bepotable:
+            if mod_key in bepotable[key]:
+                if new_mod_key == bepotable[key][mod_key][1]:
+                    new_pressed_keys[len(pressed_keys)-i-1] = bepotable[key][mod_key][0]
+                    new_mod_key = bepotable[key][mod_key][1]
+                    continue
+                else: #if we have diff keymod -> conflict, we take the last key only
+                    new_pressed_keys = [ 0 ] * len(pressed_keys)
+                    new_pressed_keys[0] = bepotable[key][mod_key][0]
+                    new_mod_key = bepotable[key][mod_key][1]
+                    return (new_pressed_keys, new_mod_key)
+            if mod_key in [ 128, 16, 8, 1 ]: #in case of meta or ctrl key pressed, we try to convert sc (modkeys = 0) even if not in translation table
+                new_pressed_keys[len(pressed_keys)-i-1] = bepotable[key][0][0]
+                continue
+        new_pressed_keys[len(pressed_keys)-i-1] = key
+        new_mod_key = mod_key
+    return (new_pressed_keys, new_mod_key)
+
 
 class EvdevKbrd:
     """
@@ -329,22 +342,21 @@ class EvdevKbrd:
         elif len_delta > 0:
             self.pressed_keys.extend([0] * len_delta)
 
-    @property
-    def state(self):
+    def state(self, keys, mod_key):
         """
         property with the HID message to send for the current keys pressed
         on the keyboards
         :return: bytes of HID message
         """
-        return [0xA1, 0x01, self.mod_keys, 0, *self.pressed_keys]
+        return [0xA1, 0x01, mod_key, 0, *keys]
 
-    def send_keys(self):
+    def send_keys(self, keys, mod_key):
         # If ran as part of Stenogotchi, communicate directly with plugin
         if self._skip_dbus:
-            plugins.loaded['plover_link']._stenogotchiservice.send_keys([self.state])
+            plugins.loaded['plover_link']._stenogotchiservice.send_keys([self.state(keys,mod_key)])
         # If ran as stand-alone, assume dbus is needed to access send_keys() function
         else:
-            self.btk_service.send_keys(self.state)
+            self.btk_service.send_keys(self.state(keys,mod_key))
 
     def event_loop(self):
         """
@@ -362,10 +374,15 @@ class EvdevKbrd:
                     if event.type == evdev.ecodes.EV_KEY and event.value < 2:
                         key_str = evdev.ecodes.KEY[event.code]
                         mod_key = self.modkey(key_str)
+                        old_key, old_mod_key = translate_bepo(self.pressed_keys, self.mod_keys)
                         #logging.debug(f"[bepo] {key_str}/{mod_key}")
                         if mod_key > -1:
                             self.update_mod_keys(mod_key, event.value)
-                            self.send_keys()
+                            new_key, new_mod_key = translate_bepo(self.pressed_keys, self.mod_keys)
+                            if new_key != old_key: #handle the case when mod key release shortly before key
+                                self.send_keys([0] * self.target_length, new_mod_key)
+                            else:
+                                self.send_keys(new_key, new_mod_key)
                         else:
                             if event.code in missings and self.mod_keys in missings[event.code]:
                                  #check if char exists in CP1252
@@ -374,23 +391,11 @@ class EvdevKbrd:
                                      if event.value == 1:
                                          self.send_using_alt_combo(unikey)
                                      continue
+                            self.update_keys(evdev.ecodes.KEY[new_key], event.value)
                             #translate to bepo
-                            new_key, new_mod_key = translate_bepo(event.code, self.mod_keys)
+                            new_key, new_mod_key = translate_bepo(self.pressed_keys, self.mod_keys)
                             #logging.debug(f"[bepo] {event.code}/{self.mod_keys} -> {new_key}/{new_mod_key}")
-                            if new_mod_key != self.mod_keys:
-                                old_mod_keys = self.mod_keys
-                                if self.mod_keys != 0:
-                                    #remove old mod_key
-                                    self.mod_keys = 0
-                                    self.send_keys()
-                                    sleep(0.1)
-                                self.mod_keys = new_mod_key
-                                self.update_keys(self.convert(evdev.ecodes.KEY[new_key]), event.value)
-                                self.send_keys()
-                                self.mod_keys = old_mod_keys
-                            else:
-                                self.update_keys(self.convert(evdev.ecodes.KEY[new_key]), event.value)
-                                self.send_keys()
+                            self.send_keys(new_key, new_mod_key)
         self.ungrab()
         for dev in self.devs:
             dev.close()
