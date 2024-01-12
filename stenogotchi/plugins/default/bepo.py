@@ -218,7 +218,7 @@ with open(os.path.dirname(__file__) + "/bepo_utils/CP1252.TXT","r") as f:
 
 def translate_bepo(pressed_keys, mod_key):
     new_pressed_keys = [ 0 ] * len(pressed_keys)
-    new_mod_key = self.mod_key
+    new_mod_key = mod_key
     for i in range(len(pressed_keys)-1,-1,-1):
         key = pressed_keys[i]
         #check if a mapping is needed
@@ -342,18 +342,21 @@ class EvdevKbrd:
         elif len_delta > 0:
             self.pressed_keys.extend([0] * len_delta)
 
-    def state(self, keys, mod_key):
+    def state(self, keys, mod_key, raw):
         """
         property with the HID message to send for the current keys pressed
         on the keyboards
         :return: bytes of HID message
         """
+        if not raw:
+            for i, k in enumerate(keys):
+                keys[i] = self.convert(evdev.ecodes.KEY[k])
         return [0xA1, 0x01, mod_key, 0, *keys]
 
-    def send_keys(self, keys, mod_key):
+    def send_keys(self, keys, mod_key, raw=False):
         # If ran as part of Stenogotchi, communicate directly with plugin
         if self._skip_dbus:
-            plugins.loaded['plover_link']._stenogotchiservice.send_keys([self.state(keys,mod_key)])
+            plugins.loaded['plover_link']._stenogotchiservice.send_keys([self.state(keys,mod_key,raw)])
         # If ran as stand-alone, assume dbus is needed to access send_keys() function
         else:
             self.btk_service.send_keys(self.state(keys,mod_key))
@@ -391,7 +394,7 @@ class EvdevKbrd:
                                      if event.value == 1:
                                          self.send_using_alt_combo(unikey)
                                      continue
-                            self.update_keys(evdev.ecodes.KEY[new_key], event.value)
+                            self.update_keys(event.code, event.value)
                             #translate to bepo
                             new_key, new_mod_key = translate_bepo(self.pressed_keys, self.mod_keys)
                             #logging.debug(f"[bepo] {event.code}/{self.mod_keys} -> {new_key}/{new_mod_key}")
@@ -401,22 +404,16 @@ class EvdevKbrd:
             dev.close()
 
     def send_using_alt_combo(self,code):
-        old_mod_keys = self.mod_keys
-        self.mod_keys = 4
         #send 0
-        self.update_keys(self.convert("KEY_KP0"),1)
-        self.send_keys()
-        self.update_keys(self.convert("KEY_KP0"),0)
-        self.send_keys()
+        self.send_keys([ self.convert("KEY_KP0"), 0, 0, 0, 0, 0], 4, True)
+        self.send_keys([0] * self.target_length, 4, True)
         #convert unicode to CP1252
         cp1252 = str(CP1252_map[code])
         #send combo (using keypad)
         for c in cp1252:
-            self.update_keys(self.convert("KEY_KP"+c),1)
-            self.send_keys()
-            self.update_keys(self.convert("KEY_KP"+c),0)
-            self.send_keys()
-        self.mod_keys = old_mod_keys
+            self.send_keys([ self.convert("KEY_KP"+c), 0, 0, 0, 0, 0], 4, True)
+            self.send_keys([0] * self.target_length, 4, True)
+        self.send_keys([0] * self.target_length, 0, True)
 
 class EvdevKeyboard(ObjectClass):
     __autohor__ = 'Anodynous'
