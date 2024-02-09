@@ -333,7 +333,10 @@ class EvdevKbrd:
 
     def update_keys(self, norm_key, value):
         if value < 1:
-            self.pressed_keys.remove(norm_key)
+            try:
+                self.pressed_keys.remove(norm_key)
+            except:
+                pass
         elif norm_key not in self.pressed_keys:
             self.pressed_keys.insert(0, norm_key)
         len_delta = self.target_length - len(self.pressed_keys)
