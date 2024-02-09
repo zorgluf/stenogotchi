@@ -34,6 +34,12 @@ class DisplayImpl(object):
                 'max': 20
             }
         }
+    
+    def is_touch(self):
+        if "touch" in self.config.keys():
+            return self.config["touch"]
+        else:
+            return False
 
     def layout(self):
         raise NotImplementedError

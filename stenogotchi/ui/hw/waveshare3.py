@@ -1,13 +1,18 @@
 import logging
+import threading
+import _thread
 
 import stenogotchi.ui.fonts as fonts
 from stenogotchi.ui.hw.base import DisplayImpl
+from stenogotchi import plugins
 
 
 class WaveshareV3(DisplayImpl):
     def __init__(self, config):
         super(WaveshareV3, self).__init__(config, 'waveshare_3')
         self._display = None
+        if self.is_touch():
+            self._flag_t = 1
 
     def layout(self):
         if self.config['color'] == 'black':
@@ -81,7 +86,7 @@ class WaveshareV3(DisplayImpl):
             }
         return self._layout
 
-    def initialize(self):
+    def initialize(self, touch = False):
         logging.info("initializing waveshare v3 display")
         from stenogotchi.ui.hw.libs.waveshare.v3.epd2in13_V3 import EPD
         self._display = EPD()
@@ -89,9 +94,54 @@ class WaveshareV3(DisplayImpl):
         self._display.Clear(0xff)
         self._display.init(self._display.PART_UPDATE)
 
+        if self.is_touch():
+            logging.info("intializing waveshare v3 touch display")
+            from stenogotchi.ui.hw.libs.waveshare.v3.gt1151 import GT_Development, GT1151
+            self._gt = GT1151()
+            self._GT_Dev = GT_Development()
+            self._GT_Old = GT_Development()
+            self._gt.GT_Init()
+
+            t = threading.Thread(target = self.pthread_irq)
+            t.daemon = True
+            t.start()
+
+            t = threading.Thread(target = self.pthread_touch)
+            t.daemon = True
+            t.start()
+
     def render(self, canvas):
         buf = self._display.getbuffer(canvas)
         self._display.displayPartial(buf)
 
     def clear(self):
+        self._flag_t = 0
         self._display.Clear(0xff)
+    
+    def pthread_irq(self) :
+        logging.info("touch irq thread running")
+        while self._flag_t == 1 :
+            if(self._gt.digital_read(self._gt.INT) == 0) :
+                self._GT_Dev.Touch = 1
+            else :
+                self._GT_Dev.Touch = 0
+        logging.info("touch irq thread stopping")
+    
+    def pthread_touch(self):
+        logging.info("touch thread running")
+        while self._flag_t == 1 :
+            # Read the touch input
+            self._gt.GT_Scan(self._GT_Dev, self._GT_Old)
+            if (self._GT_Old.X[0] == self._GT_Dev.X[0] and self._GT_Old.Y[0] == self._GT_Dev.Y[0] and self._GT_Old.S[0] == self._GT_Dev.S[0]):
+                continue
+        
+            if (self._GT_Dev.TouchpointFlag):
+                i += 1
+                self._GT_Dev.TouchpointFlag = 0
+                #touch keyboard layout
+                if (self._GT_Dev.X[0] > 210 and self._GT_Dev.X[0] < 250 and self._GT_Dev.Y[0] > 109 and self._GT_Dev.Y[0] < 122):
+                    logging.info("touch keyboard layout switch")
+                    if 'buttonshim' in plugins.loaded:
+                        _thread.start_new_thread(plugins.loaded['buttonshim'].toggle_qwerty_steno, ())
+                    else:
+                        logging.info("Please enable the buttonshim plugin first.")

@@ -64,6 +64,7 @@ ui.display.rotation = 0
 ui.display.type = "waveshare_2"
 ui.display.color = "black"
 ui.display.clear_at_shutdown = true
+ui.display.touch = false
 
 # The web UI provides an alternative way of interacting with the device to an eINK display and ButtonSHIM module. Enabling the web UI will also load the buttonshim plugin.
 ui.web.enabled = false
