@@ -136,10 +136,12 @@ class WaveshareV3(DisplayImpl):
                 continue
         
             if (self._GT_Dev.TouchpointFlag):
-                i += 1
                 self._GT_Dev.TouchpointFlag = 0
+                #change to same scale as display
+                x = self._layout['width'] - self._GT_Dev.Y[0]
+                y = self._GT_Dev.X[0]
                 #touch keyboard layout
-                if (self._GT_Dev.X[0] > 210 and self._GT_Dev.X[0] < 250 and self._GT_Dev.Y[0] > 109 and self._GT_Dev.Y[0] < 122):
+                if x > 210 and x < 250 and y > 109 and y < 122 :
                     logging.info("touch keyboard layout switch")
                     if 'buttonshim' in plugins.loaded:
                         _thread.start_new_thread(plugins.loaded['buttonshim'].toggle_qwerty_steno, ())
