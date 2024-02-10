@@ -1,10 +1,12 @@
 import logging
 import threading
 import _thread
+import time
 
 import stenogotchi.ui.fonts as fonts
 from stenogotchi.ui.hw.base import DisplayImpl
 from stenogotchi import plugins
+import stenogotchi
 
 
 class WaveshareV3(DisplayImpl):
@@ -137,9 +139,17 @@ class WaveshareV3(DisplayImpl):
         
             if (self._GT_Dev.TouchpointFlag):
                 self._GT_Dev.TouchpointFlag = 0
+
+                #if 3 points, shutdown
+                if self._GT_Dev.TouchCount > 2:
+                    logging.info(f"[waveshare3 touch] Initiated clean shutdown")
+                    _thread.start_new_thread(stenogotchi.shutdown, ())
+                    continue
+
                 #change to same scale as display
                 x = self._layout['width'] - self._GT_Dev.Y[0]
                 y = self._GT_Dev.X[0]
+
                 #touch keyboard layout
                 if x > 210 and x < 250 and y > 109 and y < 122 :
                     logging.info("touch keyboard layout switch")
@@ -147,3 +157,16 @@ class WaveshareV3(DisplayImpl):
                         _thread.start_new_thread(plugins.loaded['buttonshim'].toggle_qwerty_steno, ())
                     else:
                         logging.info("Please enable the buttonshim plugin first.")
+                
+                #touch wifi
+                if x > 113 and x < 200 and y > 109 and y < 122 :
+                    logging.info("touch wifi switch")
+                    # Toggle wifi on/off
+                    stenogotchi.set_wifi_onoff()
+                    # Check for changes in wifi status over a short while
+                    if 'buttonshim' in plugins.loaded:
+                        for i in range(10):
+                            plugins.loaded['buttonshim']._agent._update_wifi()
+                            time.sleep(2)
+                    else:
+                        logging.info("Please enable the buttonshim plugin for better update display on wifi.")
