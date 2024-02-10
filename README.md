@@ -1,4 +1,7 @@
 # Stenogotchi
+
+This fork implements a Bepo keyboard into Azerty layout for OS missing the bépo layout. It also implements waveshare v3 touch screen support. More detail documentation coming soon.
+
 ![stenogotchi_1](https://user-images.githubusercontent.com/17461433/107876588-8e52aa80-6ecf-11eb-81ba-14731c885ff1.jpeg)
 
 Aim of the project is to deliver a cheap and portable device for running [Plover](https://www.openstenoproject.org/ "Plover: Open Steno Project") where local installation on the host is impossible or simply not preferred. A stand-alone link enabling stenography using any input device supported by Plover on any device accepting bluetooth keyboards. 
