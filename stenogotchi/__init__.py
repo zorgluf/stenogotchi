@@ -146,7 +146,7 @@ def shutdown():
     
     if view.ROOT._config['ui']['display']['enabled']:
         if view.ROOT._config['ui']['display']['clear_at_shutdown']:
-            view.ROOT._agent._view.init_display()
+            #view.ROOT._agent._view.init_display()
             view.ROOT._agent._view.clear()
             # give it some time to clear the ui
             time.sleep(5)

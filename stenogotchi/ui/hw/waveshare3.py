@@ -144,7 +144,7 @@ class WaveshareV3(DisplayImpl):
                 if self._GT_Dev.TouchCount > 2:
                     logging.info(f"[waveshare3 touch] Initiated clean shutdown")
                     _thread.start_new_thread(stenogotchi.shutdown, ())
-                    continue
+                    break
 
                 #change to same scale as display
                 x = self._layout['width'] - self._GT_Dev.Y[0]
@@ -157,6 +157,7 @@ class WaveshareV3(DisplayImpl):
                         _thread.start_new_thread(plugins.loaded['buttonshim'].toggle_qwerty_steno, ())
                     else:
                         logging.info("Please enable the buttonshim plugin first.")
+                    continue
                 
                 #touch wifi
                 if x > 113 and x < 200 and y > 109 and y < 122 :
@@ -170,3 +171,4 @@ class WaveshareV3(DisplayImpl):
                             time.sleep(2)
                     else:
                         logging.info("Please enable the buttonshim plugin for better update display on wifi.")
+                    continue
